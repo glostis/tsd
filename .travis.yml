@@ -16,7 +16,7 @@ install:
         python3 -m venv venv
         source venv/bin/activate
     fi
-    - pip install -e ".[test]"
+  - pip install -e ".[test]"
 
 script:
   - bash tests.sh
