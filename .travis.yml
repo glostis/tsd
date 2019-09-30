@@ -11,7 +11,12 @@ before_install:
   - openssl aes-256-cbc -K $encrypted_291608e092e6_key -iv $encrypted_291608e092e6_iv -in .gcloud-credentials.json.enc -out .gcloud-credentials.json -d
 
 install:
-  - pip3 install -e ".[test]"
+  - |
+    if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+        python3 -m venv venv
+        source venv/bin/activate
+    fi
+    - pip install -e ".[test]"
 
 script:
   - bash tests.sh
