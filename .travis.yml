@@ -1,47 +1,40 @@
+os: linux
+dist: xenial
 language: python
+python: 3.7
 fast_finish: true
-
-if: tag IS blank
-
-matrix:
-  include:
-    - os: linux
-      dist: xenial
-      python: 3.7
-    - os: osx
-      language: generic
 
 env:
     GOOGLE_APPLICATION_CREDENTIALS=$TRAVIS_BUILD_DIR/.gcloud-credentials.json
 
 before_install:
-  - openssl aes-256-cbc -K $encrypted_1637a71a6097_key -iv $encrypted_1637a71a6097_iv -in .gcloud-credentials.json.enc -out .gcloud-credentials.json -d
-  - |
-    if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-        sudo apt-add-repository -y ppa:ubuntugis/ppa
-        sudo apt-get -qq update
-        sudo apt-get install gdal-bin libgdal-dev
-    fi
-  - |
-    if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-        wget https://www.kyngchaos.com/files/software/frameworks/GDAL_Complete-2.3.dmg
-        X=$(echo `hdiutil mount GDAL_Complete-2.3.dmg | tail -1 | awk '{$1=$2=""; print $0}'` | xargs -0 echo) && sudo installer -pkg "${X}/"Install\ GDAL\ Complete.pkg -target /
-        export PATH="/Library/Frameworks/GDAL.framework/Programs:$PATH"
-    fi
+  - openssl aes-256-cbc -K $encrypted_291608e092e6_key -iv $encrypted_291608e092e6_iv -in .gcloud-credentials.json.enc -out .gcloud-credentials.json -d
 
 install:
-  - |
-    if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-      pip3 install numpy --upgrade
-      pip3 install . --no-binary rasterio
-    fi
-  - |
-    if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-      pip3 install numpy --upgrade --user
-      pip3 install . --no-binary rasterio --user
-    fi
+  - pip install -e ".[test]"
 
 script:
   - bash tests.sh
-  - python3 tsd/test_search_scihub.py
-  - python3 tsd/test_search_devseed.py
+  - pytest --cov=tsd --cov-report term-missing
+
+jobs:
+  include:
+    - stage: test
+    - stage: test
+      os: osx
+      language: generic
+
+    - stage: deploy
+      if: tag IS present AND repo = glostis/tsd
+      before_install: skip
+      install: skip
+      script: skip
+      deploy:
+        - provider: pypi
+          user: glostis
+          password:
+            secure: "UnfW1N/gQESCSbnZchLixVAHVecwJHYoEGgfmW2JzTc4OJWSsTxF2MUYnb81qSfkxkXh3RF+VieShfVkjfhwhAmUXbbcYd2gvH+5D5i+XehGdXiXZYjYwm/mDEUPczUgVelVgq6unLRSey5CarfsfBUZczaJfZjaVBZnOzbI7iP3GnIbufiSF6HTvfTXgvbMf6j7XS1IsjEE/n7rpt2ixFiT45Tk2X2KyLbmOxk98WKfNqBU55wuQZ/EfbvG7rU/xhYNTImRv2fa9SjJOu8WuYYlC/MQIn7uID5kXdAqTlbIqxFrpxcPohTEvp+HJakcdCzyohL4B1G61nC3/gd24FGnsPswpvGQIiL3aQRDdMB43BX3jVmUOzIzpEDmI9Qrq1g4F+Eu9EuGwgIT/Lk5q/0RHFu5YpqhBVQKtu2UN441kuc5XS5x07aB/AAg/t3Yq1hdF4goZ0cRrBugN4J+fZhyX0WOpFkT/Z/2hiQgo83uR77+ovWi8s4DO3syFWCoP9hItTNRrvDuB/KV1dpGieyghlOqAnzV1vW3Bek99KxZksQqQGTzQ6mH3a436LaCnNuBEGDGANeHf3OUc9XjsuQR3hxz5Rhh9t74Qjld8E5yGAtM5NiIm9i6z5k6xsWy19rI2sV315i3yLKVWqaiCIMztuqbS+MuWzL8+Bsuo14="
+          server: https://test.pypi.org/legacy/
+          distributions: sdist bdist_wheel
+          on:
+            tags: true
