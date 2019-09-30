@@ -37,6 +37,7 @@ requirements = ['area',
                 'utm',
                 'sentinelhub']
 
+extras_require = {'test': ['pytest', 'pytest-cov']}
 
 setup(name=about["__title__"],
       version=about["__version__"],
@@ -50,4 +51,5 @@ setup(name=about["__title__"],
       package_data={'': ['s2_mgrs_grid.txt']},
       include_package_data=True,
       install_requires=requirements,
+      extras_require=extras_require,
       python_requires=">=3.5")
