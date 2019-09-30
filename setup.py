@@ -16,14 +16,13 @@ def readme():
 
 requirements = ['area',
                 'boto3',
-                'bs4',
-                'click',
+                'botocore',
+                'beautifulsoup4[lxml]',
                 'future',
                 'geojson',
                 'google-auth',
                 'google-cloud-bigquery',
-                'lxml',
-                'mgrs',
+                'kml2geojson',
                 'numpy>=1.12',
                 'pandas',
                 'planet',
@@ -32,10 +31,11 @@ requirements = ['area',
                 'rasterio[s3]>=1.0',
                 'requests',
                 'sat-search>=0.2,<0.2.2',
+                'sentinelhub',
                 'shapely',
                 'tqdm',
                 'utm',
-                'sentinelhub']
+                'xmltodict']
 
 extras_require = {'test': ['pytest', 'pytest-cov']}
 
